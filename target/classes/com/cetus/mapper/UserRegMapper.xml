@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cetus.mapper.UserRegMapper">
+	
+	<select id="getList" resultType="com.cetus.domain.UserRegVO">
+		<![CDATA[
+			select* from tbl_userreg
+		]]>	
+	</select> 
+	
+	<insert id="insert">
+		insert into tbl_userreg
+		values(#{id},#{pw},#{rpw},#{email},#{root},0,1000)
+	</insert>
+	
+	<insert id="insertAuth">
+		insert into tbl_userreg_auth
+		values(#{id},'ROLE_USER')
+	</insert>
+	
+	 <!-- 아이디 중복 체크 -->
+    <select id="idCheck" parameterType="String" resultType="int">
+        SELECT COUNT(id) FROM tbl_userreg WHERE id= #{id}
+    </select>
+    
+    <!-- 이메일 중복 체크 -->
+    <select id="emailCheck" parameterType="String" resultType="int">
+        SELECT COUNT(email) FROM tbl_userreg WHERE email= #{email}
+    </select>
+    
+     <!-- 내 정보 보기 -->
+    <select id="getInfo" resultType="com.cetus.domain.UserRegVO">
+  		select * from tbl_userreg where id=#{id}
+  	</select>
+  	
+    <!-- 내 정보 수정 -->
+    <update id="update">
+    	update tbl_userreg set pw=#{pw}, rpw=#{rpw} where id=#{id}
+    </update>
+    
+         <!-- 내 정보 비밀번호 수정 -->
+    <update id="updatePass" parameterType="String">
+    	update tbl_userreg set pw=#{pw}, rpw=#{rpw} where id=#{id}
+    </update>
+    
+     <!-- 내 정보 이메일 수정 -->
+    <update id="updateEmail" parameterType="String">
+    	update tbl_userreg set email=#{email} where id=#{id}
+    </update>
+    
+    <select id="getpointlist" resultType="com.cetus.domain.UserRegVO">
+		<![CDATA[
+			select* from tbl_userreg where id=#{id}
+		]]>	
+	</select> 
+	
+	<update id="updatepoint">
+		update tbl_userreg set cash=#{cash} where id=#{id}
+	</update>
+    
+    <update id="chargePoint">
+    	update tbl_userreg set cash= cash + #{cash} where id=#{id}
+    </update>
+    
+</mapper>

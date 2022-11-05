@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+ <mapper namespace="com.cetus.mapper.NoticeMapper">
+ 	<select id="getList" resultType="com.cetus.domain.NoticeVO" parameterType="com.cetus.domain.Criteria">
+	 	<![CDATA[
+			select nno, ntitle, ncontent, nwriter, nreg_date 
+			from (
+        		select /*+index_desc(tbl_notice pk_notice) */
+            		rownum rn, nno, ntitle, ncontent, nwriter, nreg_date
+        		from (select /*+index_desc(tbl_notice pk_notice) */
+            		rownum rn, nno, ntitle, ncontent, nwriter, nreg_date
+        		from tbl_notice order by nno desc)
+        		where rownum <= #{pageNum} * #{amount}
+   				)
+			where rn > (#{pageNum} -1 ) * #{amount}
+		]]>
+ 	</select>
+ 	<select id="getTotal" resultType="int">
+		<![CDATA[
+			select count(*) from tbl_notice where nno > 0
+		]]>
+	</select>
+ 	<select id="get" resultType="com.cetus.domain.NoticeVO">
+ 		select * from tbl_notice where nno=#{nno}
+ 	</select>
+ 	<insert id="insert">
+ 		insert into tbl_notice values(seq_notice.nextval,#{ntitle},#{ncontent},#{nwriter},sysdate)
+ 	</insert>
+ 	<delete id="delete">
+ 		delete from tbl_notice where nno=#{nno}
+ 	</delete>
+ 	<update id="update">
+ 		update tbl_notice set ntitle=#{ntitle}, ncontent=#{ncontent} where nno=#{nno}
+ 	</update>
+ </mapper>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cetus.mapper.MyFavoriteMapper">
+	
+	<select id="getList" resultType="com.cetus.domain.MyFavoriteVO">
+		<![CDATA[
+			select * from tbl_favorite where id=#{id}
+		]]>	
+	</select> 
+	
+	<select id="getListWithPaging" resultType="com.cetus.domain.MyFavoriteVO">
+		<![CDATA[
+			select *
+			from (
+        		select /*+index_desc(tbl_favorite pk_board) */
+            		rownum rn, bno,carte, title, filesize, cash, id
+        		from (select /*+index_desc(tbl_favorite pk_board) */
+            		rownum rn, bno,carte, title, filesize, cash, id
+        		from tbl_favorite where id=#{id} and favorite_cnt > 0 order by rn desc)
+        		where rownum <= #{pageNum} * #{amount}
+   				)
+			where rn > (#{pageNum} -1 ) * #{amount}
+		]]>
+	</select>
+	<select id="getTotal" resultType="int">
+		<![CDATA[
+			select count(*) from tbl_favorite where bno > 0 and id=#{id}
+		]]>
+	</select>
+	
+	<select id="getListWithPagingFile" resultType="com.cetus.domain.MyFavoriteVO">
+		<![CDATA[
+			select *
+			from (
+        		select /*+index_desc(tbl_MyDownFile pk_board) */
+            		rownum rn, bno,carte, title, filesize, cash, id
+        		from (select /*+index_desc(tbl_MyDownFile pk_board) */
+            		rownum rn, bno,carte, title, filesize, cash, id
+        		from tbl_MyDownFile where id=#{id} order by rn desc)
+        		where rownum <= #{pageNum} * #{amount}
+   				)
+			where rn > (#{pageNum} -1 ) * #{amount}
+		]]>
+	</select>
+	<select id="getTotalFile" resultType="int">
+		<![CDATA[
+			select count(*) from tbl_MyDownFile where bno > 0 and id=#{id}
+		]]>
+	</select>
+	
+	<delete id="getremove" parameterType="com.cetus.domain.MyFavoriteVO">
+		<![CDATA[
+			delete from tbl_favorite where bno=#{search} and id=#{id}
+		]]>	
+	</delete>
+	
+	<delete id="getremoveFile" parameterType="com.cetus.domain.MyFavoriteVO">
+		<![CDATA[
+			delete from tbl_mydownfile where bno=#{search} and id=#{id}
+		]]>	
+	</delete> 
+	
+	<delete id="board_remove" parameterType="com.cetus.domain.MyFavoriteVO">
+		<![CDATA[
+			delete from tbl_favorite where bno=#{bno} 
+		]]>	
+	</delete> 
+	
+	<insert id="getinsert">
+      <![CDATA[
+         insert into tbl_favorite 
+         values(#{bno},#{carte},#{title},#{filesize},#{cash},#{id},#{favorite_cnt})
+      ]]>   
+   </insert>
+	
+	<select id="getBno" resultType="com.cetus.domain.MyFavoriteVO">
+		select * from tbl_favorite where bno = #{bno} and id =#{id}
+	</select> 
+	
+	<insert id="insertMyDownFiles" >
+		<![CDATA[
+			insert into tbl_mydownfile 
+			values(#{bno},#{carte},#{title},#{filesize},#{cash},#{id})
+		]]>	
+	</insert>
+	
+	<select id="selectMyDownFilesBno" resultType="com.cetus.domain.myDownloadVO">
+		<![CDATA[
+			select * from tbl_mydownfile where bno = #{bno}
+		]]>	
+	</select>
+	
+</mapper>

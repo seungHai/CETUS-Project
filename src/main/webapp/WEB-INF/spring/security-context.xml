@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd"> <!-- -5.0 지웠음 -->
+	
+	<!-- handler 객체를 가져오기 위해 bean으로 정의 -->
+	<bean id="customAccessDenied" class="com.cetus.security.CustomAccessDeniedHandler"></bean>
+	<bean id="CustomLoginSuccess" class="com.cetus.security.CustomLoginSuccessHandler"></bean>
+	<!-- 회원가입 수정후에 다시 활성화 -->
+	<!-- <bean id="bcryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/> -->
+	<bean id="customUserDetailService" class="com.cetus.security.CustomUserDetailService"></bean>
+	
+	<!-- 화면 이동 담당 -->
+	<security:http auto-config="true" use-expressions="true">
+	
+		<!-- 이 url을 쳤을때 뺏는다. -->
+		<security:intercept-url pattern="/sample/all" access="permitAll"/>
+		<security:intercept-url pattern="/sample/member" access="hasRole('ROLE_MEMBER')"/>
+		<security:intercept-url pattern="/sample/admin" access="hasRole('ROLE_ADMIN')"/>
+		<!-- DB에서 grant로 준 권한들의 집합체 : role(롤) hasRole(우리가 사용할 것) -->
+		<!-- 그 url가려면 'ROLE_MEMBER' 라는 권한이 있어야 해! -->
+		
+		<!-- <security:form-login login-page="/customLogin" authentication-success-handler-ref="CustomLoginSuccess"/> --> <!-- 이제 핸들러 안태울거임 -->
+		<security:form-login login-page="/customLogin"/>
+		<!-- 가져온 객체 CustomLoginSuccess 속성으로 걸어줌 -->
+		<security:logout logout-url="/customLogout" invalidate-session="true" delete-cookies="remember-me"/>
+		<!-- 로그인 정보는 세션에 저장되고 log아웃할땐 세션을 비워줘야한다. invalidate 사용  -->
+		
+		<!-- 실제로 시큐리티 객체에 있는 핸들러 : 에러가 났을때 어떻게 동작할건지 판단해서 이동 -->
+		<!-- <security:access-denied-handler error-page="/accessError"/> --> <!-- denied(승인거부) 되었을때 어떻게 처리할건지 -->
+		<!-- handler를 이용하면 내가 받아서 내가 재정의를한다 = 내가 원하는대로 커스터마이징 -->
+		<!-- 에러 페이지에 대한걸 내가 재정의 할것 -->
+		
+		<!-- handler객체 참조하는 방식으로 변경 위에 error-page로 바로가는거는 주석처리 -->
+		<security:access-denied-handler ref="customAccessDenied"/>
+		
+		<security:csrf disabled="true"/> 
+		
+		<!-- DB를 이용한 자동 로그인(1주일) -->
+		<!-- remember-me-cookie="" 쿠키이름 정하는건데 default값이 remember-me임 굳이 설정 안해도 ok -->
+		<security:remember-me data-source-ref="dataSource" token-validity-seconds="604800"/>
+		
+		<!-- ckediter랑 충돌나서 추가한 구문 X-Frame-Options' to 'deny' -->
+		<security:headers>
+           <security:frame-options disabled="true"></security:frame-options>
+      	</security:headers>
+		
+	</security:http>
+	
+	<!-- 권한, 인증 관련 내용 -->
+	<security:authentication-manager>
+		<!-- 211213_위에서 bean으로 생성한 객체 provider에 참조시킴 -->
+		<security:authentication-provider user-service-ref="customUserDetailService">
+		<!-- 회원가입 수정후에 다시 활성화 해야함 인코딩 -->
+			<!-- <security:password-encoder ref="bcryptPasswordEncoder"/> 인코더 추가 (비밀번호 보호) -->
+			
+			<!-- 지금은 쿼리문을 바로 날리는데 나중에는 수정할거임 -->
+			<!-- 이런 방식은 고정적이라 중간중간에 기능을 추가하기가 힘들다 그래서 mybatis를 사용하도록 바꿀거임 -->
+			<!-- <security:jdbc-user-service data-source-ref="dataSource"
+				users-by-username-query="select userid, userpw, enabled from tbl_member where userid=?"
+				authorities-by-username-query="select userid, auth from tbl_member_auth where userid=?"
+			/> -->
+			
+			<!-- security에선 name == id 역활이다. -->
+				<!-- DB에 passward가 그대로 들어가면 보안문제 : 인코딩해서 넣고 디코딩해서 꺼내온다. -->
+				<!-- {noop}을 붙여주면 일단 동작은 된다. -->
+			<!-- <security:user-service>
+				<security:user name="member" password="{noop}member" authorities="ROLE_MEMBER"/>
+			<security:user name="admin" password="{noop}admin" authorities="ROLE_ADMIN, ROLE_MEMBER"/>
+			</security:user-service> -->
+			
+		</security:authentication-provider>
+	</security:authentication-manager>
+	
+</beans>

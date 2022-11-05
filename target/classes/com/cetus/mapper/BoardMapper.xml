@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+ <mapper namespace="com.cetus.mapper.BoardMapper">
+ 	<select id="getList" resultType="com.cetus.domain.BoardVO">
+	 	<![CDATA[
+	 		select * from tbl_board
+	 	]]>
+ 	</select>
+ 	<select id="getListWithPaging" resultType="com.cetus.domain.BoardVO">
+		<![CDATA[
+			select bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+			from (
+        		select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+        		from (select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+        		from tbl_board order by bno desc)
+        		where rownum <= #{pageNum} * #{amount} 
+   				)
+			where rn > (#{pageNum} -1) * #{amount}
+		]]>
+	</select>
+	<select id="getTotal" resultType="int">
+		<![CDATA[
+			select count(*) from tbl_board where bno > 0
+		]]>
+	</select>
+	<select id="getCateTotal" resultType="int">
+		<![CDATA[
+			select count(*) from tbl_board where catecode=#{catecode}
+		]]>
+	</select>
+	<select id="getSubCateTotal" resultType="int">
+		<![CDATA[
+			select count(*) from tbl_board where catecoderef=#{catecoderef}
+		]]>
+	</select>
+	<select id="getSearchTotal" resultType="int">
+		<![CDATA[
+			select count(*) from tbl_board where catecoderef=#{catecoderef} and title like '%'||#{search}||'%'
+		]]>
+	</select>
+ 	<select id="getCateory" resultType="com.cetus.domain.BoardVO">
+ 		<![CDATA[
+ 		select bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+			from (
+        		select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+        		from (select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+        		from (select * from tbl_board where catecode=#{catecode}) order by bno desc)
+        		where rownum <= #{pageNum} * #{amount} 
+   				)
+			where rn > (#{pageNum} -1) * #{amount} 
+	 	]]>
+ 	</select>
+ 	<select id="getSubCategory" resultType="com.cetus.domain.BoardVO">
+ 		<![CDATA[
+ 		select bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+			from (
+        		select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+        		from (select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+        		from (select * from tbl_board where catecoderef=#{catecoderef}) order by bno desc)
+        		where rownum <= #{pageNum} * #{amount} 
+   				)
+			where rn > (#{pageNum} -1) * #{amount} 
+	 	]]>
+ 	</select>
+ 	<insert id="insert">
+		insert into tbl_board (bno, title, filesize, content, price, id, hit,recomendCount, catecode, catecoderef, reg_date, update_date) values (seq_board.nextval, #{title}, #{filesize}, #{content}, #{price}, #{id}, #{hit},#{recomendCount}, #{catecode},#{catecoderef}, sysdate, sysdate)
+	</insert>
+	
+ 	<insert id="insertSelectKey">
+		<selectKey keyProperty="bno" order="BEFORE" resultType="long">
+			select seq_board.nextval from dual	
+		</selectKey>
+		insert into tbl_board (bno, title, filesize , content, price, id, hit, recomendCount, catecode, catecoderef, reg_date, update_date) values (seq_board.CURRVAL,  #{title}, #{filesize}, #{content}, #{price}, #{id}, #{hit},#{recomendCount}, #{catecode},#{catecoderef}, sysdate, sysdate)
+	</insert> 
+	
+	<select id="read" resultType="com.cetus.domain.BoardVO">
+		select * from tbl_board	where bno = #{bno}
+	</select>
+
+
+	<delete id="delete">
+		delete from tbl_board where bno = #{bno}
+	</delete>
+	
+	<update id="update">
+		update tbl_board
+		set 
+			title = #{title},
+			content =#{content},
+			price=#{price},
+			update_date = sysdate
+		where 
+			bno = #{bno}
+	</update>
+	
+	<update id="updateHitCount" parameterType="long">
+		update tbl_board
+		set
+			hit = hit+1
+		where
+			bno=#{bno}
+	</update>
+	
+	
+	<select id="getSearch" resultType="com.cetus.domain.BoardVO">
+		<![CDATA[
+			select bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+			from (
+        		select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+        		from (select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+        		from (select * from tbl_board where catecoderef=#{catecoderef} and title like '%'||#{search}||'%') order by bno desc)
+        		where rownum <= #{pageNum} * #{amount} 
+   				)
+			where rn > (#{pageNum} -1) * #{amount} 
+	 	]]>
+	</select>
+	<update id="updateHitDeleteCount" parameterType="long">
+		update tbl_board
+		set
+			hit = hit-1
+		where
+			bno=#{bno}
+	</update>
+	<update id="updateRecoCount" parameterType="long">
+		update tbl_board
+		set
+			recomendcount = recomendcount+1
+		where
+			bno=#{bno}
+	</update>
+	<select id="getBestList" resultType="com.cetus.domain.BoardVO">
+		<![CDATA[
+		select bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+			from (
+        		select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+        		from (select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt
+        		from tbl_board where recomendcount > 0 order by recomendcount desc)
+        		where rownum <= #{pageNum} * #{amount} 
+   				)
+			where rn > (#{pageNum} -1) * #{amount}
+		]]>
+	</select>
+	<select id="getBestTotal" resultType="int">
+		<![CDATA[
+			select count(*) from tbl_board where recomendcount > 0
+		]]>
+	</select>
+	<update id="updateReplyCnt">
+		update TBL_BOARD
+		set replycnt = replycnt + #{amount}
+		where BNO = #{bno}
+	</update>
+	<select id="getBno" resultType="long">
+		select bno from
+		(select bno from tbl_board order by bno desc)
+		where rownum=1
+	</select>
+	
+	<select id="getFavoriteList" resultType="com.cetus.domain.BoardVO">
+       <![CDATA[
+          select * from tbl_board where favorite_cnt > 0 order by favorite_cnt desc
+       ]]>
+    </select>
+   
+   <update id="favorite_cnt" parameterType="long">
+      update tbl_board
+      set
+         favorite_cnt = favorite_cnt+1
+      where
+         bno=#{bno}
+   </update>
+	
+	<update id="updateFilesize">
+		update tbl_temp set filesize = filesize + #{filesize}, price = price + #{filesize} / 100000
+	</update>
+	
+	<update id="resetFilesize">
+		update tbl_temp set filesize = 0, price = 0
+	</update>
+	
+	<select id="getFileVO" resultType="com.cetus.domain.FileVO">
+		select * from tbl_temp
+	</select>
+	
+	<select id="getFavoriteTotal" resultType="int">
+		<![CDATA[
+			select count(*) from tbl_board where favorite_cnt > 0
+		]]>
+	</select>
+	
+	<select id="getListfavoritePaging" resultType="com.cetus.domain.BoardVO">
+		<![CDATA[
+			select *
+			from (
+        		select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt,favorite_cnt
+        		from (select /*+INDEX_DESC(tbl_board pk_board) */
+            		rownum rn, bno, title, content, id, catecode, catecoderef, price, fileSize, reg_date, update_date, hit, recomendCount, replyCnt,favorite_cnt
+        		from tbl_board where favorite_cnt>0 order by bno desc)
+        		where rownum <= #{pageNum} * #{amount} 
+   				)
+			where rn > (#{pageNum} -1) * #{amount}
+		]]>
+	</select> 
+
+	<select id="getfavoriteTotal" resultType="int">
+		<![CDATA[
+			select count(*) from tbl_board where favorite_cnt > 0
+		]]>
+	</select>
+	
+ </mapper>

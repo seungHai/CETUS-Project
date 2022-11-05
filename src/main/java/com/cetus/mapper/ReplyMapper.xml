@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+ <mapper namespace="com.cetus.mapper.ReplyMapper">
+
+	<insert id="insert">
+		insert into tbl_reply(rno, bno, reply, replyer, reply_date) values (seq_reply.nextval, #{bno}, #{reply}, #{replyer},sysdate)	
+	</insert>
+
+    <select id="read" resultType="com.cetus.domain.ReplyVO">
+        SELECT RNO, BNO, REPLY, REPLYER, REPLY_DATE, REPLY_UPDATEDATE FROM TBL_REPLY WHERE RNO = #{rno}
+    </select>
+    
+    <delete id="delete">
+    	DELETE FROM TBL_REPLY WHERE RNO = #{rno}
+    </delete>
+    
+    <update id="update">
+        UPDATE TBL_REPLY 
+        SET REPLY = #{reply}, REPLY_UPDATEDATE = SYSDATE 
+        WHERE RNO = #{rno}
+    </update>
+    
+    <select id="getListWithPaging" resultType="com.cetus.domain.ReplyVO">
+        SELECT RNO, BNO, REPLY, REPLYER, REPLY_DATE, REPLY_UPDATEDATE FROM TBL_REPLY 
+        WHERE BNO = #{bno} order by REPLY_DATE
+    </select>
+    
+ </mapper>
